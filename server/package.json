@@ -11,7 +11,7 @@
     "db:query": "node query.js"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=20.x"
   },
   "dependencies": {
     "cors": "^2.8.5",
