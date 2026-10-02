@@ -6,6 +6,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "test": "node --test",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "db:query": "node query.js"

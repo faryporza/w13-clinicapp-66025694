@@ -9,6 +9,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ doctor_id: '', patient_name: '', slot: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [cancellingId, setCancellingId] = useState(null);
 
   async function load() {
     try {
@@ -49,6 +50,26 @@ export default function App() {
       setError(e.error || 'failed_to_book');
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function onCancel(id) {
+    if (!window.confirm(`ยกเลิกการนัดหมายหรือไม่ ${id}?`)) return;
+    setCancellingId(id);
+    try {
+      setError(null);
+      const r = await fetch(`${API_BASE}/appointments/${id}`, {
+        method: 'DELETE',
+      });
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({ error: 'failed_to_delete' }));
+        throw e;
+      }
+      await load();
+    } catch (e) {
+      setError(e.error || 'failed_to_delete');
+    } finally {
+      setCancellingId(null);
     }
   }
 
@@ -115,6 +136,7 @@ export default function App() {
                   <th style={{ padding: '0.25rem' }}>Slot</th>
                   <th style={{ padding: '0.25rem' }}>Patient</th>
                   <th style={{ padding: '0.25rem' }}>Doctor</th>
+                  <th style={{ padding: '0.25rem' }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -123,6 +145,15 @@ export default function App() {
                     <td style={{ padding: '0.25rem' }}>{new Date(a.slot).toLocaleString()}</td>
                     <td style={{ padding: '0.25rem' }}>{a.patient_name}</td>
                     <td style={{ padding: '0.25rem' }}>{a.doctor_name} <em>({a.specialty})</em></td>
+                    <td style={{ padding: '0.25rem' }}>
+                      <button
+                        onClick={() => onCancel(a.id)}
+                        disabled={cancellingId === a.id}
+                        style={{ cursor: cancellingId === a.id ? 'not-allowed' : 'pointer', color: '#c00', background: 'none', border: '1px solid #c00', padding: '0.25rem 0.5rem' }}
+                      >
+                        {cancellingId === a.id ? 'Cancelling…' : 'Cancel'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
